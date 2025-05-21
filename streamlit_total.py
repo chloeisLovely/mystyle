@@ -5,14 +5,12 @@ import chardet
 import io
 
 st.set_page_config(page_title="대한민국 인구 변화 시각화", layout="wide")
-st.title(":earth_asia: 대한민국 지역별 인구 변화 시각화 대시보드")
+st.title("📊 대한민국 지역별 인구 변화 시각화 대시보드")
 
-# 지도용 지역 간소화 함수
 def extract_sido(region):
     return region.split()[0] if pd.notnull(region) else region
 
-# 파일 업로드
-uploaded_files = st.file_uploader("2010년과 2025년 CSV 파일을 업로드하세요", type=["csv"], accept_multiple_files=True)
+uploaded_files = st.file_uploader("📂 2010년과 2025년 CSV 파일을 업로드하세요", type=["csv"], accept_multiple_files=True)
 
 if uploaded_files and len(uploaded_files) == 2:
     dfs = []
@@ -58,19 +56,22 @@ if uploaded_files and len(uploaded_files) == 2:
         st.subheader("📊 지역별 인구 변화 추이")
         selected_region = st.selectbox("시도 선택", sorted(df_all["시도"].unique()))
         region_df = df_all[df_all["시도"] == selected_region]
-
         fig_line = px.line(region_df, x="연도", y="연령구간인구수", color="행정구역",
-                           title=f"{selected_region} 지역 내 행정구역별 인구 변화")
+                           title=f"{selected_region} 행정구역별 인구 변화")
         st.plotly_chart(fig_line, use_container_width=True)
 
     with tab3:
         st.subheader("📈 연령구간인구수 상관관계 (2010 vs 2025)")
+
         df_2010 = df_all[df_all["연도"] == 2010].groupby("시도")["연령구간인구수"].sum().reset_index()
         df_2025 = df_all[df_all["연도"] == 2025].groupby("시도")["연령구간인구수"].sum().reset_index()
         df_corr = pd.merge(df_2010, df_2025, on="시도", suffixes=("_2010", "_2025"))
 
-        fig_scatter = px.scatter(df_corr, x="연령구간인구수_2010", y="연령구간인구수_2025", text="시도",
-                                 trendline="ols", title="시도별 연령구간인구수 상관관계")
+        fig_scatter = px.scatter(df_corr,
+                                 x="연령구간인구수_2010",
+                                 y="연령구간인구수_2025",
+                                 text="시도",
+                                 title="시도별 연령구간인구수 상관관계")
         st.plotly_chart(fig_scatter, use_container_width=True)
 
         corr = df_corr["연령구간인구수_2010"].corr(df_corr["연령구간인구수_2025"])
@@ -78,3 +79,4 @@ if uploaded_files and len(uploaded_files) == 2:
 
 else:
     st.warning("⚠️ 반드시 2010년과 2025년 CSV 파일 2개를 업로드해주세요.")
+
